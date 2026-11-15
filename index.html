@@ -361,7 +361,29 @@ function blank(){
   return{id:uid("m"),fecha:"",jornada:"",rival:"",cond:"L",comp:"",hora:"",llegada:"",llegadaManual:false,lugar:"",
     conv:{},motivos:{},pista:{},q:0,ev:{},tm:{},rdor:false,rnum:{},notas:""};
 }
-function newMatch(){var m=blank();if(S.matches.length)m.comp=S.matches[S.matches.length-1].comp||"";S.matches.push(m);save();return m;}
+function newMatch(){var m=blank();m.comp=COMPS[0];S.matches.push(m);save();return m;}
+var COMPS=["Liga Senior Provincial","Amistoso"];
+/* Partidos del calendario: se leen de partidos.json (generado desde Google Calendar) y se añaden los que falten.
+   El identificador sale del evento del calendario, así que todos los dispositivos crean el mismo partido. */
+function importCal(){
+  if(ui.auth!=="in"||typeof fetch!=="function")return;
+  fetch("partidos.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    if(!d||!Array.isArray(d.partidos))return;
+    var ch=0,off=S.calOff||{};
+    d.partidos.forEach(function(x){
+      if(!x||!x.id||!x.fecha||off[x.id])return;
+      var id="c_"+x.id,m=null;S.matches.forEach(function(y){if(y.id===id)m=y;});
+      if(!m){
+        if(S.matches.some(function(y){return y.fecha===x.fecha&&String(y.rival).toLowerCase()===String(x.rival).toLowerCase();}))return;
+        m=blank();m.id=id;m.cal=x.id;m.fecha=x.fecha;m.hora=x.hora||"";m.llegada=menos(m.hora,60);m.rival=x.rival||"";m.cond=x.cond==="V"?"V":"L";m.comp=x.comp||COMPS[0];m.jornada=x.jornada?String(x.jornada):"";m.lugar=x.lugar||"";
+        S.matches.push(m);ch++;
+      }else if(!Object.keys(m.ev||{}).length&&(m.fecha!==x.fecha||(x.hora&&m.hora!==x.hora))){
+        m.fecha=x.fecha;m.hora=x.hora||m.hora;if(!m.llegadaManual)m.llegada=menos(m.hora,60);ch++;
+      }
+    });
+    if(ch){save();if(typing())pendingRender=true;else rerenderKeepScroll();}
+  }).catch(function(){});
+}
 function hoy(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
 function menos(h,min){
   var p=/^(\d{1,2}):(\d{2})$/.exec(h||"");if(!p)return"";
@@ -518,7 +540,8 @@ function vDatos(m){
   h+='<div class="w2"><label class="f">Condición</label><div class="lv"><button data-a="cond" data-v="L" class="'+(m.cond!=="V"?"on":"")+'">LOCAL</button><button data-a="cond" data-v="V" class="'+(m.cond==="V"?"on":"")+'">VISITANTE</button></div></div>';
   h+=fld("Fecha","fecha","date",m.fecha)+fld("Jornada","jornada","text",m.jornada,"",'inputmode="numeric" autocomplete="off"');
   h+=fld("Hora","hora","time",m.hora)+fld("Llegada","llegada","time",m.llegada);
-  h+=fld("Competición","comp","text",m.comp,"w2",'autocomplete="off"')+fld("Lugar","lugar","text",m.lugar,"w2",'autocomplete="off"');
+  h+='<div class="w2"><label class="f">Competición</label><div class="lv">'+COMPS.map(function(c){return'<button data-a="comp" data-v="'+esc(c)+'" class="'+(m.comp===c?"on":"")+'">'+esc(c).toUpperCase()+'</button>';}).join("")+'</div></div>';
+  h+=fld("Lugar","lugar","text",m.lugar,"w2",'autocomplete="off"');
   h+='<div class="w2"><label class="f">Estadística del rival</label><div class="lv"><button data-a="rdor" data-v="0" class="'+(m.rdor?"":"on")+'">POR EQUIPO</button><button data-a="rdor" data-v="1" class="'+(m.rdor?"on":"")+'">POR DORSAL</button></div></div>';
   h+='</div><p class="hint">Por equipo: cada acción del rival se apunta con un toque. Por dorsal: tras la acción eliges el dorsal, o «Equipo» si no lo has visto. La llegada se calcula 60 minutos antes de la hora; puedes cambiarla.</p></div>';
   h+='<div class="row"><button class="btn dark" data-a="sec" data-v="conv" style="flex:1">Ir a convocatoria</button>';
@@ -679,9 +702,10 @@ function vRoster(){
 function vSettings(){
   var h='<div class="card"><h2>Cuenta y sincronización</h2><div class="rule"><b>Usuario</b><p>'+esc(ui.user)+'</p></div><div class="rule"><b>Estado</b><p id="synctxt">'+esc(ui.syncTxt)+'</p></div><div class="row" style="margin-top:10px">'+(ui.confirm==="out"?'<button class="btn danger" data-a="salir" style="flex:1">¿Seguro? Cerrar sesión</button>':'<button class="btn ghost" data-a="asksalir" style="flex:1">Cerrar sesión</button>')+'</div></div>';
   h+='<div class="card"><h2>Equipo</h2><label class="f">Nombre del equipo en marcador y mensajes<input type="text" data-team="nombre" value="'+esc(equipo())+'" autocomplete="off"></label></div>';
+  h+='<div class="card"><h2>Calendario</h2><p class="sub" style="margin:0 0 10px">Los partidos del calendario del equipo se añaden solos al abrir la app. Si borras uno, no vuelve a aparecer.</p><button class="btn ghost block" data-a="recal">Buscar partidos nuevos ahora</button></div>';
   h+='<div class="card"><h2>Copia de seguridad</h2><p class="sub" style="margin:0 0 10px">Los datos se sincronizan entre los dispositivos del equipo. Importar una copia sustituye los datos de todos.</p><div class="row"><button class="btn dark" data-a="exportar" style="flex:1">Exportar copia</button><label class="btn ghost" style="flex:1;text-align:center">Importar copia<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Estadística Senior CBA · versión 1.2<br><span class="sub">'+S.matches.length+' partidos · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Estadística Senior CBA · versión 1.3<br><span class="sub">'+S.matches.length+' partidos · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -702,9 +726,10 @@ document.addEventListener("click",function(e){
     case"abrir":ui.mid=v;var mm=match();ui.sec=Object.keys(mm.ev||{}).length?"resumen":convocados(mm).length?"directo":"datos";ui.rq="";keep=false;break;
     case"sec":ui.sec=v;ui.pick=null;ui.subs=false;keep=false;break;
     case"cond":m.cond=v;break;
+    case"comp":m.comp=v;break;
     case"rdor":m.rdor=v==="1";break;
     case"askdel":ui.confirm="del";break;
-    case"borrar":S.matches=S.matches.filter(function(x){return x.id!==m.id;});ui.mid=null;keep=false;toast("Partido eliminado");break;
+    case"borrar":if(m.cal){if(!S.calOff)S.calOff={};S.calOff[m.cal]=true;}S.matches=S.matches.filter(function(x){return x.id!==m.id;});ui.mid=null;keep=false;toast("Partido eliminado");break;
     case"conv":
       if(m.conv[v]){delete m.conv[v];if(m.pista)delete m.pista[v];}
       else{if(convocados(m).length>=12)toast("Ya hay 12 convocados");m.conv[v]=true;}
@@ -737,6 +762,7 @@ document.addEventListener("click",function(e){
     case"askdelp":ui.confirm="p"+v;break;
     case"delp":S.roster=S.roster.filter(function(p){return p.id!==v;});break;
     case"exportar":exportar();return;
+    case"recal":importCal();toast("Calendario comprobado");return;
     case"asksalir":ui.confirm="out";rerenderKeepScroll();return;
     case"salir":if(A.logout)A.logout();return;
     default:return;
@@ -794,14 +820,16 @@ function exportar(){
 }
 function typing(){var a=document.activeElement;return!!a&&(a.tagName==="TEXTAREA"||(a.tagName==="INPUT"&&a.type!=="file"));}
 document.addEventListener("focusout",function(){if(pendingRender)setTimeout(function(){if(pendingRender&&!typing())rerenderKeepScroll();},60);});
-A.ui=ui;A.render=render;A.agg=agg;A.der=der;A.avisos=avisos;A.val=val;
+A.ui=ui;A.importCal=importCal;A.render=render;A.agg=agg;A.der=der;A.avisos=avisos;A.val=val;
 A.getState=function(){return S;};
-A.setAuth=function(st,email){ui.auth=st;ui.user=email||"";ui.loginBusy=false;if(st!=="in"){ui.mid=null;ui.tab="partidos";}render();};
+var calHecho=false;
+A.setAuth=function(st,email){ui.auth=st;ui.user=email||"";ui.loginBusy=false;if(st!=="in"){ui.mid=null;ui.tab="partidos";calHecho=false;}render();};
 A.loginResult=function(err){ui.loginBusy=false;ui.loginErr=err||"";if(err)render();};
 A.setSync=function(code,txt){ui.sync=code;ui.syncTxt=txt;var d=$("dot");if(d){d.className="dot "+code;d.title=txt;d.setAttribute("aria-label",txt);}var t=$("synctxt");if(t)t.textContent=txt;};
 A.applyRemote=function(team,matches){
-  S.roster=team.roster||[];S.seq=team.seq||S.roster.length;S.nombre=team.nombre||"";S.matches=matches||[];
+  S.roster=team.roster||[];S.seq=team.seq||S.roster.length;S.nombre=team.nombre||"";S.calOff=team.calOff||{};S.matches=matches||[];
   store();
+  if(!calHecho){calHecho=true;setTimeout(importCal,50);}
   if(ui.mid&&!match())ui.mid=null;
   if(typing())pendingRender=true;else rerenderKeepScroll();
 };

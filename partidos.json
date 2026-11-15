@@ -1,0 +1,165 @@
+{
+ "actualizado": "2026-11-15",
+ "partidos": [
+  {
+   "id": "fhr92lja52g1o0gremceit9a78",
+   "fecha": "2026-10-18",
+   "hora": "13:30",
+   "rival": "Gilauto Agustinos",
+   "cond": "L",
+   "comp": "Liga Senior Provincial",
+   "jornada": "1",
+   "lugar": "Pabellón Municipal \"Rafael Machado Villar\", C/ León s/n, 18100 Armilla"
+  },
+  {
+   "id": "b8a8ld7imcfjv3hjeuq7epc2f0",
+   "fecha": "2026-10-25",
+   "hora": "13:00",
+   "rival": "CB Maracena",
+   "cond": "V",
+   "comp": "Liga Senior Provincial",
+   "jornada": "2",
+   "lugar": "Pabellón Municipal de Maracena, Av. José Comino, Maracena"
+  },
+  {
+   "id": "8gc7g3vdg5fpjb8j06bs6hqq08",
+   "fecha": "2026-11-08",
+   "hora": "12:15",
+   "rival": "CB Peligros",
+   "cond": "V",
+   "comp": "Liga Senior Provincial",
+   "jornada": "12",
+   "lugar": "Pabellón Municipal Peligros, C/ Pintor Murillo 56, 18210 Peligros"
+  },
+  {
+   "id": "dv94qtno3nnicm6pc25s213p50",
+   "fecha": "2026-11-15",
+   "hora": "12:00",
+   "rival": "CB Carmelo",
+   "cond": "V",
+   "comp": "Liga Senior Provincial",
+   "jornada": "4",
+   "lugar": "Colegio Carmelo (pabellón), C/ Padre Francisco Palau y Quer 19, 18001 Granada"
+  },
+  {
+   "id": "ksfmofq77ocm9m4eoh92iepkq4",
+   "fecha": "2026-11-22",
+   "hora": "13:30",
+   "rival": "Electrónica Filadelfia CB La Zubia",
+   "cond": "L",
+   "comp": "Liga Senior Provincial",
+   "jornada": "5",
+   "lugar": "Pabellón Municipal \"Rafael Machado Villar\", C/ León s/n, 18100 Armilla"
+  },
+  {
+   "id": "1f5brm23aitknvgk3a4qc8pue0",
+   "fecha": "2026-11-28",
+   "hora": "18:00",
+   "rival": "CB Accitania",
+   "cond": "V",
+   "comp": "Liga Senior Provincial",
+   "jornada": "6",
+   "lugar": "Pabellón Municipal de Guadix, Av. Pedro de Mendoza y Luján, 18500 Guadix"
+  },
+  {
+   "id": "05mcr1io0f7it9kb1p3ibrbhg4",
+   "fecha": "2026-12-13",
+   "hora": "13:30",
+   "rival": "Eigra Grupo CB Santa Fe",
+   "cond": "L",
+   "comp": "Liga Senior Provincial",
+   "jornada": "7",
+   "lugar": "Pabellón Municipal \"Rafael Machado Villar\", C/ León s/n, 18100 Armilla"
+  },
+  {
+   "id": "p0t2a4n167bu2rutc34oaan4uo",
+   "fecha": "2026-12-19",
+   "hora": "18:30",
+   "rival": "RACA Residencias Virgen María",
+   "cond": "V",
+   "comp": "Liga Senior Provincial",
+   "jornada": "8",
+   "lugar": "CES Ramón y Cajal (pabellón), C/ Cañaveral s/n, 18004 Granada"
+  },
+  {
+   "id": "l5s6fusq9jo1jccfv8vv6vu2d0",
+   "fecha": "2027-01-23",
+   "hora": "20:15",
+   "rival": "Gilauto Agustinos",
+   "cond": "V",
+   "comp": "Liga Senior Provincial",
+   "jornada": "10",
+   "lugar": "Colegio Agustinos (pista exterior 1), C/ Cañaveral 32, 18003 Granada"
+  },
+  {
+   "id": "3ooh4a6p2fme14mhjaomemnpd0",
+   "fecha": "2027-01-31",
+   "hora": "13:30",
+   "rival": "CB Maracena",
+   "cond": "L",
+   "comp": "Liga Senior Provincial",
+   "jornada": "11",
+   "lugar": "Pabellón Municipal \"Rafael Machado Villar\", C/ León s/n, 18100 Armilla"
+  },
+  {
+   "id": "khn9jk5iv0ghccs5gmko01gpdg",
+   "fecha": "2027-02-14",
+   "hora": "13:00",
+   "rival": "CB Peligros",
+   "cond": "L",
+   "comp": "Liga Senior Provincial",
+   "jornada": "3",
+   "lugar": "Pabellón Municipal \"Rafael Machado Villar\", C/ León s/n, 18100 Armilla"
+  },
+  {
+   "id": "t8pdetkvtin0bge0ta9vg1p5gg",
+   "fecha": "2027-02-21",
+   "hora": "13:30",
+   "rival": "CB Carmelo",
+   "cond": "L",
+   "comp": "Liga Senior Provincial",
+   "jornada": "13",
+   "lugar": "Pabellón Municipal \"Rafael Machado Villar\", C/ León s/n, 18100 Armilla"
+  },
+  {
+   "id": "6kak5gd7h1jonv43djgejog450",
+   "fecha": "2027-03-06",
+   "hora": "16:30",
+   "rival": "Electrónica Filadelfia CB La Zubia",
+   "cond": "V",
+   "comp": "Liga Senior Provincial",
+   "jornada": "14",
+   "lugar": "Pabellón Municipal La Zubia \"11 de Marzo\", C/ Tamboril 6, 18140 La Zubia"
+  },
+  {
+   "id": "fl5cf1gna4i8vfhbkmi3ss2pn0",
+   "fecha": "2027-03-14",
+   "hora": "13:30",
+   "rival": "CB Accitania",
+   "cond": "L",
+   "comp": "Liga Senior Provincial",
+   "jornada": "15",
+   "lugar": "Pabellón Municipal \"Rafael Machado Villar\", C/ León s/n, 18100 Armilla"
+  },
+  {
+   "id": "7nou74g74n2ceeqfkmum7ev8e0",
+   "fecha": "2027-04-04",
+   "hora": "12:00",
+   "rival": "Eigra Grupo CB Santa Fe",
+   "cond": "V",
+   "comp": "Liga Senior Provincial",
+   "jornada": "16",
+   "lugar": "Polideportivo Municipal Santa Fe, Plaza Carlos III s/n, 18320 Santa Fe"
+  },
+  {
+   "id": "433an4ph421316am58oas93oa4",
+   "fecha": "2027-04-11",
+   "hora": "13:30",
+   "rival": "RACA Residencias Virgen María",
+   "cond": "L",
+   "comp": "Liga Senior Provincial",
+   "jornada": "17",
+   "lugar": "Pabellón Municipal \"Rafael Machado Villar\", C/ León s/n, 18100 Armilla"
+  }
+ ]
+}
