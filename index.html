@@ -369,11 +369,14 @@ function importCal(){
   if(ui.auth!=="in"||typeof fetch!=="function")return;
   fetch("partidos.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(d){
     if(!d||!Array.isArray(d.partidos))return;
-    var ch=0,off=S.calOff||{};
+    var ch=0,off=S.calOff||{},t0=hoy(),antes=S.matches.length;
+    S.matches=S.matches.filter(function(y){return!(y.cal&&y.fecha&&y.fecha<t0&&!Object.keys(y.ev||{}).length&&!Object.keys(y.conv||{}).length&&!y.notas);});
+    if(S.matches.length!==antes){ch++;if(ui.mid&&!match())ui.mid=null;}
     d.partidos.forEach(function(x){
       if(!x||!x.id||!x.fecha||off[x.id])return;
       var id="c_"+x.id,m=null;S.matches.forEach(function(y){if(y.id===id)m=y;});
       if(!m){
+        if(x.fecha<t0)return;
         if(S.matches.some(function(y){return y.fecha===x.fecha&&String(y.rival).toLowerCase()===String(x.rival).toLowerCase();}))return;
         m=blank();m.id=id;m.cal=x.id;m.fecha=x.fecha;m.hora=x.hora||"";m.llegada=menos(m.hora,60);m.rival=x.rival||"";m.cond=x.cond==="V"?"V":"L";m.comp=x.comp||COMPS[0];m.jornada=x.jornada?String(x.jornada):"";m.lugar=x.lugar||"";
         S.matches.push(m);ch++;
@@ -512,13 +515,18 @@ function vLogin(){
   h+='<button class="btn block" type="submit" '+(ui.loginBusy?"disabled":"")+'>'+(ui.loginBusy?"Entrando…":"Entrar")+'</button>';
   return h+'<p class="hint">Entra con el usuario que te ha dado el entrenador. La primera vez hace falta conexión a internet.</p></form>';
 }
+/* Finalizado: marcado a mano o con fecha anterior a hoy. */
+function esFin(m){return!!m.fin||(!!m.fecha&&m.fecha<hoy());}
 function vList(){
-  var h='<button class="btn block" data-a="nuevo" style="margin-bottom:14px">Nuevo partido</button>';
-  if(!S.matches.length)return h+'<div class="card empty"><b>Aún no hay partidos</b><br>Crea el primero para llevar la estadística.</div>';
-  var ms=S.matches.slice().sort(function(a,b){return(b.fecha||"9999").localeCompare(a.fecha||"9999");});
+  var prox=S.matches.filter(function(m){return!esFin(m);}),fin=S.matches.filter(esFin),lt=ui.lt==="fin"?"fin":"prox";
+  var h='<button class="btn block" data-a="nuevo" style="margin-bottom:12px">Nuevo partido</button>';
+  h+='<div class="seg"><button data-a="lt" data-v="prox" class="'+(lt==="prox"?"on":"")+'">Próximos · '+prox.length+'</button><button data-a="lt" data-v="fin" class="'+(lt==="fin"?"on":"")+'">Finalizados · '+fin.length+'</button></div>';
+  var ms=lt==="prox"?prox:fin;
+  if(!ms.length)return h+'<div class="card empty">'+(lt==="prox"?'<b>No hay partidos próximos</b><br>Los del calendario aparecen solos; los amistosos se crean con «Nuevo partido».':'<b>Aún no hay partidos finalizados</b><br>Un partido pasa aquí al pulsar «Finalizar partido» o al día siguiente de jugarse.')+'</div>';
+  ms=ms.slice().sort(function(a,b){var x=(a.fecha||"9999")+(a.hora||""),y=(b.fecha||"9999")+(b.hora||"");return lt==="prox"?x.localeCompare(y):y.localeCompare(x);});
   ms.forEach(function(m){
     var p=/^(\d{4})-(\d{2})-(\d{2})$/.exec(m.fecha||""),o=agg(m,null),hay=o.evs.length>0;
-    var pill=hay?'<span class="pill '+(o.n.pts>o.r.pts?"ok":o.n.pts<o.r.pts?"bad":"warn")+'">'+o.n.pts+'-'+o.r.pts+'</span>':'<span class="pill warn">Sin jugar</span>';
+    var pill=hay?'<span class="pill '+(o.n.pts>o.r.pts?"ok":o.n.pts<o.r.pts?"bad":"warn")+'">'+o.n.pts+'-'+o.r.pts+'</span>':(lt==="fin"?'<span class="pill warn">Sin datos</span>':(m.fecha===hoy()?'<span class="pill ok">Hoy</span>':''));
     h+='<button class="m" data-a="abrir" data-v="'+m.id+'"><span class="d">'+(p?'<b>'+(+p[3])+'</b><i>'+MESES[+p[2]-1]+'</i>':'<b>–</b><i>fecha</i>')+'</span><span class="t"><b>'+esc(m.rival||"Rival por definir")+'</b><span>'+(m.comp?esc(m.comp)+" · ":"")+(m.cond==="V"?"Visitante":"Local")+(m.hora?" · "+esc(m.hora):"")+'</span></span>'+pill+'</button>';
   });
   return h;
@@ -599,7 +607,12 @@ function vDirecto(m){
   var last=o.evs.slice(-6).reverse();
   h+='<div class="card"><div class="h2r"><h2>Últimas acciones</h2>'+(last.length?'<button class="btn ghost sm" data-a="undo">Deshacer última</button>':'')+'</div>';
   h+=last.length?last.map(function(e){return'<div class="evr"><span class="'+(e.t==="n"?"n":"r")+'">'+esc(txtEv(e))+'</span><button data-a="delev" data-v="'+e.id+'" aria-label="Borrar acción">✕</button></div>';}).join(""):'<p class="sub" style="margin:0">Aún no hay acciones.</p>';
-  return h+'</div>';
+  h+='</div>';
+  return h+finBtn(m);
+}
+function finBtn(m){
+  if(m.fin)return'<button class="btn ghost block" data-a="fin" data-v="0">Reabrir partido</button>';
+  return ui.confirm==="fin"?'<button class="btn danger block" data-a="fin" data-v="1">¿Seguro? Pasar a finalizados</button>':'<button class="btn dark block" data-a="askfin">Finalizar partido</button>';
 }
 /* Comparativa compacta de equipo para el directo */
 function claves(o){
@@ -667,7 +680,7 @@ function vResumen(m){
     var lus=Object.keys(LU).map(function(k){return LU[k];}).sort(function(a,b){return(b.f+b.c)-(a.f+a.c);}).slice(0,5);
     if(lus.length)h+='<div class="card"><h2>Quintetos</h2>'+lus.map(function(x){var d=x.f-x.c;return'<div class="evr"><span>'+x.l.map(function(id){var p=jug(id);return p?p.num:"?";}).sort(function(a,b){return nv(a)-nv(b);}).join(" · ")+'</span><b class="'+(d>0?"pos":d<0?"neg":"")+'">'+x.f+'-'+x.c+' ('+(d>0?"+":"")+d+')</b></div>';}).join("")+'<p class="hint">Puntos a favor y en contra con cada quinteto en pista, por dorsales.</p></div>';
   }
-  return h;
+  return h+finBtn(m);
 }
 function vTemporada(){
   var ms=S.matches.filter(function(m){return Object.keys(m.ev||{}).length>0;}),h="";
@@ -705,7 +718,7 @@ function vSettings(){
   h+='<div class="card"><h2>Calendario</h2><p class="sub" style="margin:0 0 10px">Los partidos del calendario del equipo se añaden solos al abrir la app. Si borras uno, no vuelve a aparecer.</p><button class="btn ghost block" data-a="recal">Buscar partidos nuevos ahora</button></div>';
   h+='<div class="card"><h2>Copia de seguridad</h2><p class="sub" style="margin:0 0 10px">Los datos se sincronizan entre los dispositivos del equipo. Importar una copia sustituye los datos de todos.</p><div class="row"><button class="btn dark" data-a="exportar" style="flex:1">Exportar copia</button><label class="btn ghost" style="flex:1;text-align:center">Importar copia<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Estadística Senior CBA · versión 1.4<br><span class="sub">'+S.matches.length+' partidos · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Estadística Senior CBA · versión 1.5<br><span class="sub">'+S.matches.length+' partidos · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -718,7 +731,7 @@ function apunta(m,t,a,p,d){addEv(m,t,a,p,d);ui.pick=null;save();rerenderKeepScro
 document.addEventListener("click",function(e){
   var b=e.target.closest("[data-a]");if(!b)return;
   var a=b.dataset.a,v=b.dataset.v,m=match(),keep=true;
-  if(a!=="askdel"&&a!=="askdelp"&&a!=="asksalir")ui.confirm=null;
+  if(a!=="askdel"&&a!=="askdelp"&&a!=="asksalir"&&a!=="askfin")ui.confirm=null;
   switch(a){
     case"tab":if(ui.tab==="plantilla")save();ui.tab=v;if(v==="partidos")ui.mid=null;ui.pick=null;ui.subs=false;keep=false;break;
     case"volver":ui.mid=null;ui.pick=null;ui.subs=false;keep=false;break;
@@ -727,6 +740,9 @@ document.addEventListener("click",function(e){
     case"sec":ui.sec=v;ui.pick=null;ui.subs=false;keep=false;break;
     case"cond":m.cond=v;break;
     case"comp":m.comp=v;break;
+    case"lt":ui.lt=v;render();return;
+    case"askfin":ui.confirm="fin";break;
+    case"fin":m.fin=v==="1";if(m.fin){ui.sec="resumen";toast("Partido finalizado");keep=false;}break;
     case"rdor":m.rdor=v==="1";break;
     case"askdel":ui.confirm="del";break;
     case"borrar":if(m.cal){if(!S.calOff)S.calOff={};S.calOff[m.cal]=true;}S.matches=S.matches.filter(function(x){return x.id!==m.id;});ui.mid=null;keep=false;toast("Partido eliminado");break;
