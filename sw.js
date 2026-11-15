@@ -1,5 +1,5 @@
 // Estadística Senior CBA — funcionamiento sin conexión
-var CACHE = "senior-cba-v1";
+var CACHE = "senior-cba-v2";
 var FILES = ["./", "index.html", "sync.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {

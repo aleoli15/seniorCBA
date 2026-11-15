@@ -326,10 +326,12 @@ var ACC={"2m":["2 ✓","Canasta de 2"],"2x":["2 ✗","Falla de 2"],"3m":["3 ✓"
 var PAD=[["2m","2x"],["3m","3x"],["1m","1x"],["ro","rd"],["to","st"],["as","pf"]];
 var QN=["1º","2º","3º","4º","PR"];
 
+/* Plantilla inicial. Los identificadores son fijos para que dos dispositivos que arranquen a la vez coincidan. */
+var SEED=[["95","Ángel Corpas"],["12","Curro Cuenca"],["55","Manuel Jesús de la Torre"],["22","Jose Gamiz"],["18","Noah Gómez"],["13","Jorge Herrera"],["14","Daniel Jarillo"],["1","Alejandro Martínez"],["91","Ginés Navarro"],["99","Roger Alfonso Pérez"],["2","Yosdado Pérez"],["00","Víctor Puertollano"],["8","Juan Jesús Torres"],["11","Alejandro Yeste"],["0","Mario Yeste"]];
 function load(){
   var s=null;
   try{s=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-  if(!s||!s.roster)s={roster:[],matches:[],seq:0,nombre:""};
+  if(!s||!s.roster||(!s.roster.length&&!(s.matches||[]).length))s={roster:SEED.map(function(r,i){return{id:"s"+(i+1),num:r[0],name:r[1],ap:""};}),matches:[],seq:SEED.length,nombre:""};
   return s;
 }
 var S=load(),saveFail=false,pendingRender=false;
@@ -340,10 +342,18 @@ var ui={tab:"partidos",mid:null,sec:"datos",confirm:null,auth:"loading",user:"",
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function $(id){return document.getElementById(id);}
 function match(){for(var i=0;i<S.matches.length;i++)if(S.matches[i].id===ui.mid)return S.matches[i];return null;}
-function sortedRoster(){return S.roster.slice().sort(function(a,b){return a.num-b.num;});}
+function nv(x){var n=parseInt(x,10);return isNaN(n)?999:n;}
+function sortedRoster(){return S.roster.slice().sort(function(a,b){return(nv(a.num)-nv(b.num))||(String(a.num).length-String(b.num).length);});}
 function jug(id){for(var i=0;i<S.roster.length;i++)if(S.roster[i].id===id)return S.roster[i];return null;}
 function equipo(){return S.nombre||"Crestanevada CBA";}
-function corto(p){return p?p.name.split(" ")[0]:"";}
+/* Nombre corto para botones: el apodo si lo hay; si no, el nombre, con la inicial del apellido cuando se repite. */
+function corto(p){
+  if(!p)return"";
+  if(p.ap)return p.ap;
+  var w=String(p.name||"").trim().split(/\s+/),f=w[0]||"";
+  var rep=S.roster.some(function(x){return x!==p&&!x.ap&&String(x.name||"").trim().split(/\s+/)[0]===f;});
+  return rep&&w.length>1?f+" "+w[w.length-1].charAt(0)+".":f;
+}
 var idSeq=0;
 function uid(pre){return pre+Date.now()+Math.random().toString(36).slice(2,5)+(idSeq++);}
 function blank(){
@@ -631,7 +641,7 @@ function vResumen(m){
     if(per.length>1)h+='<div class="card"><h2>Por cuartos</h2><table class="cmp big"><tbody>'+per.map(function(r){return'<tr><td class="'+(r[1]>r[2]?"w":"")+'">'+r[1]+'</td><th>'+r[0]+'</th><td class="'+(r[2]>r[1]?"w":"")+'">'+r[2]+'</td></tr>';}).join("")+'</tbody></table></div>';
     var LU={};o.evs.forEach(function(e){var pt=puntosDe(e.a);if(!pt||!e.l||e.l.length!==5)return;var k=e.l.slice().sort().join("|");if(!LU[k])LU[k]={l:e.l,f:0,c:0};if(e.t==="n")LU[k].f+=pt;else LU[k].c+=pt;});
     var lus=Object.keys(LU).map(function(k){return LU[k];}).sort(function(a,b){return(b.f+b.c)-(a.f+a.c);}).slice(0,5);
-    if(lus.length)h+='<div class="card"><h2>Quintetos</h2>'+lus.map(function(x){var d=x.f-x.c;return'<div class="evr"><span>'+x.l.map(function(id){var p=jug(id);return p?p.num:"?";}).sort(function(a,b){return a-b;}).join(" · ")+'</span><b class="'+(d>0?"pos":d<0?"neg":"")+'">'+x.f+'-'+x.c+' ('+(d>0?"+":"")+d+')</b></div>';}).join("")+'<p class="hint">Puntos a favor y en contra con cada quinteto en pista, por dorsales.</p></div>';
+    if(lus.length)h+='<div class="card"><h2>Quintetos</h2>'+lus.map(function(x){var d=x.f-x.c;return'<div class="evr"><span>'+x.l.map(function(id){var p=jug(id);return p?p.num:"?";}).sort(function(a,b){return nv(a)-nv(b);}).join(" · ")+'</span><b class="'+(d>0?"pos":d<0?"neg":"")+'">'+x.f+'-'+x.c+' ('+(d>0?"+":"")+d+')</b></div>';}).join("")+'<p class="hint">Puntos a favor y en contra con cada quinteto en pista, por dorsales.</p></div>';
   }
   return h;
 }
@@ -661,16 +671,16 @@ function vRoster(){
   var h='<div class="card"><h2>Plantilla ('+S.roster.length+')</h2>';
   if(!S.roster.length)h+='<p class="sub" style="margin:0 0 6px">Añade a los jugadores con su dorsal.</p>';
   sortedRoster().forEach(function(p){
-    h+='<div class="pl"><input class="inp" style="width:64px;margin:0;text-align:center;font-weight:900" inputmode="numeric" data-pn="'+p.id+'" value="'+p.num+'" aria-label="Dorsal"><input class="inp" style="margin:0;flex:1;min-width:0" data-pp="'+p.id+'" value="'+esc(p.name)+'" autocomplete="off" aria-label="Nombre">'+(ui.confirm==="p"+p.id?'<button class="btn danger" style="padding:9px 10px" data-a="delp" data-v="'+p.id+'">¿Quitar?</button>':'<button class="btn ghost" style="padding:9px 12px" data-a="askdelp" data-v="'+p.id+'" aria-label="Quitar a '+esc(p.name)+'">✕</button>')+'</div>';
+    h+='<div class="pl"><input class="inp" style="width:54px;margin:0;text-align:center;font-weight:900;padding-left:4px;padding-right:4px" inputmode="numeric" maxlength="2" data-pn="'+p.id+'" value="'+esc(p.num)+'" aria-label="Dorsal"><input class="inp" style="margin:0;flex:2;min-width:0" data-pp="'+p.id+'" value="'+esc(p.name)+'" autocomplete="off" aria-label="Nombre"><input class="inp" style="margin:0;flex:1;min-width:0" data-pa="'+p.id+'" value="'+esc(p.ap||"")+'" placeholder="Apodo" autocomplete="off" aria-label="Apodo o nombre corto">'+(ui.confirm==="p"+p.id?'<button class="btn danger" style="padding:9px 10px" data-a="delp" data-v="'+p.id+'">¿Quitar?</button>':'<button class="btn ghost" style="padding:9px 12px" data-a="askdelp" data-v="'+p.id+'" aria-label="Quitar a '+esc(p.name)+'">✕</button>')+'</div>';
   });
-  return h+'</div><button class="btn dark block" data-a="addp">Añadir jugador</button><p class="hint">En el directo se usa el primer nombre, así que conviene escribir primero el nombre o apodo por el que lo reconoces.</p>';
+  return h+'</div><button class="btn dark block" data-a="addp">Añadir jugador</button><p class="hint">Los dorsales se pueden cambiar cuando quieras: la estadística va ligada al jugador, no al número. En los botones del directo aparece el apodo; si lo dejas vacío, se usa el nombre.</p>';
 }
 function vSettings(){
   var h='<div class="card"><h2>Cuenta y sincronización</h2><div class="rule"><b>Usuario</b><p>'+esc(ui.user)+'</p></div><div class="rule"><b>Estado</b><p id="synctxt">'+esc(ui.syncTxt)+'</p></div><div class="row" style="margin-top:10px">'+(ui.confirm==="out"?'<button class="btn danger" data-a="salir" style="flex:1">¿Seguro? Cerrar sesión</button>':'<button class="btn ghost" data-a="asksalir" style="flex:1">Cerrar sesión</button>')+'</div></div>';
   h+='<div class="card"><h2>Equipo</h2><label class="f">Nombre del equipo en marcador y mensajes<input type="text" data-team="nombre" value="'+esc(equipo())+'" autocomplete="off"></label></div>';
   h+='<div class="card"><h2>Copia de seguridad</h2><p class="sub" style="margin:0 0 10px">Los datos se sincronizan entre los dispositivos del equipo. Importar una copia sustituye los datos de todos.</p><div class="row"><button class="btn dark" data-a="exportar" style="flex:1">Exportar copia</button><label class="btn ghost" style="flex:1;text-align:center">Importar copia<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Estadística Senior CBA · versión 1.0<br><span class="sub">'+S.matches.length+' partidos · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Estadística Senior CBA · versión 1.1<br><span class="sub">'+S.matches.length+' partidos · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -722,7 +732,7 @@ document.addEventListener("click",function(e){
     case"rq":ui.rq=v;rerenderKeepScroll();return;
     case"ts":ui.ts=v;rerenderKeepScroll();return;
     case"copiar":copiar(waText(m));return;
-    case"addp":S.seq=(S.seq||0)+1;var mx=0;S.roster.forEach(function(p){if(p.num>mx)mx=p.num;});S.roster.push({id:uid("p"),num:mx+1,name:"Jugador nuevo"});break;
+    case"addp":S.seq=(S.seq||0)+1;S.roster.push({id:uid("p"),num:"",name:"Jugador nuevo",ap:""});break;
     case"askdelp":ui.confirm="p"+v;break;
     case"delp":S.roster=S.roster.filter(function(p){return p.id!==v;});break;
     case"exportar":exportar();return;
@@ -745,7 +755,8 @@ document.addEventListener("submit",function(e){
 });
 document.addEventListener("input",function(e){
   var t=e.target,m=match(),d=t.dataset;
-  if(d.pn){var p=jug(d.pn);var n=parseInt(t.value,10);if(p&&!isNaN(n))p.num=n;save();return;}
+  if(d.pn){var p=jug(d.pn);if(p)p.num=String(t.value).replace(/\D/g,"").slice(0,2);save();return;}
+  if(d.pa){var pa=jug(d.pa);if(pa)pa.ap=t.value.trim();save();return;}
   if(d.pp){var q=jug(d.pp);if(q)q.name=t.value;save();return;}
   if(d.team){S[d.team]=t.value;save();return;}
   if(!m)return;
