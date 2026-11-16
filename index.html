@@ -580,7 +580,6 @@ function vConv(m){
     h+='<div class="pl '+(on?"":"off")+'"><span class="num">'+p.num+'</span><div class="n"><span>'+esc(p.name)+'</span>'+(on||n===0?"":'<input class="inp" data-mot="'+p.id+'" value="'+esc(m.motivos[p.id]||"")+'" placeholder="Motivo de la ausencia" autocomplete="off">')+'</div><button class="chk '+(on?"on":"")+'" data-a="conv" data-v="'+p.id+'" aria-pressed="'+on+'" aria-label="Convocar a '+esc(p.name)+'">✓</button></div>';
   });
   h+='</div>';
-  if(n)h+='<div class="card"><h2>Mensaje para los jugadores</h2><textarea id="wa" rows="9" readonly aria-label="Mensaje de convocatoria">'+esc(waText(m))+'</textarea><button class="btn dark block" data-a="copiar" style="margin-top:10px">Copiar mensaje</button></div>';
   h+='<div class="row"><button class="btn ghost" data-a="convtodos" style="flex:1">'+(n?"Quitar todos":"Marcar los 12 primeros")+'</button><button class="btn dark" data-a="sec" data-v="directo" style="flex:1">Ir al directo</button></div>';
   return h;
 }
@@ -718,7 +717,7 @@ function vSettings(){
   h+='<div class="card"><h2>Calendario</h2><p class="sub" style="margin:0 0 10px">Los partidos del calendario del equipo se añaden solos al abrir la app. Si borras uno, no vuelve a aparecer.</p><button class="btn ghost block" data-a="recal">Buscar partidos nuevos ahora</button></div>';
   h+='<div class="card"><h2>Copia de seguridad</h2><p class="sub" style="margin:0 0 10px">Los datos se sincronizan entre los dispositivos del equipo. Importar una copia sustituye los datos de todos.</p><div class="row"><button class="btn dark" data-a="exportar" style="flex:1">Exportar copia</button><label class="btn ghost" style="flex:1;text-align:center">Importar copia<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Estadística Senior CBA · versión 1.5<br><span class="sub">'+S.matches.length+' partidos · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Estadística Senior CBA · versión 1.6<br><span class="sub">'+S.matches.length+' partidos · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -773,7 +772,6 @@ document.addEventListener("click",function(e){
     case"delev":delete m.ev[v];break;
     case"rq":ui.rq=v;rerenderKeepScroll();return;
     case"ts":ui.ts=v;rerenderKeepScroll();return;
-    case"copiar":copiar(waText(m));return;
     case"addp":S.seq=(S.seq||0)+1;S.roster.push({id:uid("p"),num:"",name:"Jugador nuevo",ap:""});break;
     case"askdelp":ui.confirm="p"+v;break;
     case"delp":S.roster=S.roster.filter(function(p){return p.id!==v;});break;
