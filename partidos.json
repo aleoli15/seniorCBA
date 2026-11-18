@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-15",
+ "actualizado": "2026-11-18",
  "partidos": [
   {
    "id": "fhr92lja52g1o0gremceit9a78",
@@ -10,16 +10,6 @@
    "comp": "Liga Senior Provincial",
    "jornada": "1",
    "lugar": "Pabellón Municipal \"Rafael Machado Villar\", C/ León s/n, 18100 Armilla"
-  },
-  {
-   "id": "b8a8ld7imcfjv3hjeuq7epc2f0",
-   "fecha": "2026-10-25",
-   "hora": "13:00",
-   "rival": "CB Maracena",
-   "cond": "V",
-   "comp": "Liga Senior Provincial",
-   "jornada": "2",
-   "lugar": "Pabellón Municipal de Maracena, Av. José Comino, Maracena"
   },
   {
    "id": "8gc7g3vdg5fpjb8j06bs6hqq08",
@@ -40,6 +30,16 @@
    "comp": "Liga Senior Provincial",
    "jornada": "4",
    "lugar": "Colegio Carmelo (pabellón), C/ Padre Francisco Palau y Quer 19, 18001 Granada"
+  },
+  {
+   "id": "b8a8ld7imcfjv3hjeuq7epc2f0",
+   "fecha": "2026-11-18",
+   "hora": "20:15",
+   "rival": "CB Maracena",
+   "cond": "V",
+   "comp": "Liga Senior Provincial",
+   "jornada": "2",
+   "lugar": "Pabellón Municipal de Maracena, Av. José Comino, Maracena"
   },
   {
    "id": "ksfmofq77ocm9m4eoh92iepkq4",
